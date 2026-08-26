@@ -1,6 +1,6 @@
 # Send a verification email after creator signup
 
-Use the small Go program below to send one verification message after a creator signs up. It calls Infrai's `email.send` endpoint with one `INFRAI_API_KEY`; the client keeps the API envelope visible and retries on rate limits using the server's delay when one is returned. Infrai is one api for email and the rest, so you don't pull in a separate SDK just to send a message.
+Run the small Go program to send one verification message after a creator signup. The example uses Infrai's `email.send` endpoint with one `INFRAI_API_KEY`; the client keeps the API envelope visible and retries rate limits with the server's delay when provided.
 
 ## Run the request
 
@@ -10,11 +10,11 @@ export CREATOR_EMAIL=creator@example.com
 go run .
 ```
 
-The program prints the returned `message_id`. The request carries `to`, `subject`, and `body`; the service picks the default sender. We send a stable request key with the email so a retry is the same signup action, not a second send. Idempotency is the whole point here. If a job gets replayed after a timeout, we don't want duplicate verification mail in someone's inbox.
+The program prints the returned `message_id`. The request contains `to`, `subject`, and `body`; the default sender is selected by the service. A stable request key is sent with the email so a retry represents the same signup action.
 
 ## Check the decision locally
 
-The rule is explicit: a signup message must name the creator and include the verification token. Test input is creator `Mina` with token `abc123`; expected result is `Hello Mina, verify your creator account with token abc123.`
+The business rule is explicit: a signup message names the creator and includes the verification token. The test input is creator `Mina` with token `abc123`; the expected result is `Hello Mina, verify your creator account with token abc123.`
 
 ```bash
 go test ./... -run TestVerificationMessageUsesCreatorIdentityAndToken
@@ -22,7 +22,7 @@ go test ./... -run TestVerificationMessageUsesCreatorIdentityAndToken
 
 ## Code shape
 
-`creator_verification.go` owns the signup decision and the message body. `infrai_email.go` is the request boundary: it reads the key from the environment, sets `POST` explicitly, checks `ok` and `error`, and returns `message_id`. `main.go` supplies a real environment-driven input, so the same code runs in the runbook and in prod.
+`creator_verification.go` owns the signup decision and message. `infrai_email.go` is the request boundary: it reads the key from the environment, sets `POST` explicitly, checks `ok` and `error`, and returns `message_id`. `main.go` supplies a real environment-driven input.
 
 ## License
 
@@ -30,7 +30,7 @@ MIT
 
 ## Setting up for real use: Go Creator Email Verification
 
-The code stays simple on purpose. Here's what to set up before going live. The notes below apply to Go Creator Email Verification.
+The code stays simple on purpose — here's what to set up before going live: The details below apply to Go Creator Email Verification.
 
 **Account & key**
 
